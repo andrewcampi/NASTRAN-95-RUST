@@ -1,0 +1,63 @@
+NASTRAN-95-RUST
+==============
+
+A Rust rewrite of NASA's NASTRAN-95, developed module by module against a
+reproducible Fortran baseline.
+
+Source
+------
+Upstream:  https://github.com/nasa/NASTRAN-95
+Pinned:    65e29e9db7b21a02bb42e723afa74fa7635ed765 (2015-12-03)
+License:   NASA Open Source Agreement 1.3 (see vendor/nastran95/)
+
+The vendor tree is pristine upstream source plus the deck corpus. The build
+applies patches/nastran95.patch and strips DOS EOF bytes in a working copy;
+it never edits the vendor tree.
+
+Baseline
+--------
+scripts/build-baseline.sh builds build/nastran from the pinned source using
+gfortran 12 in the pinned container (docker/Dockerfile). The build is the
+oracle for Rust parity. The 1995 Sun f77 demoout files are a historical
+sanity check, not a byte-exact target for a modern compiler.
+
+Qualification (2026-11-26)
+--------------------------
+132 decks total:
+  PASS       32  exact after stripping banners, dates, page headers
+  KNOWN_DIFF 32  same structure; numeric within 1e-9 / 1e-3
+  MISSING    11  needs RSCARDS/INP1/SOF artifacts not in the corpus
+  RESTART     8  1995 output came from a checkpoint not in the corpus
+  FAIL       49  residual structural or numeric differences
+
+Qualified corpus: 64 decks (PASS + KNOWN_DIFF).
+Report: qualification/report.json
+Harness: parity/run_all.py, parity/classify.py, parity/qualify.py
+
+Rust parity gate
+----------------
+A module ticket may merge only when:
+  - the rebuilt baseline and the Rust build produce byte-identical normalized
+    output for every deck that exercises the module, and
+  - the reviewer has approved the diff and the parity report.
+
+MISSING and RESTART decks are out of scope until their reference artifacts
+are reconstructed. They must not be used to claim parity.
+
+Layout
+------
+  vendor/nastran95/     pristine NASA source + inp/ + demoout/ + rf/ + alt/
+  patches/              reviewed source patches for the modern build
+  docker/               pinned toolchain image
+  scripts/              build-baseline.sh, run-deck.sh
+  parity/               run-all, normalize, diff, classify
+  qualification/        report.json + SUMMARY
+  inventory/            module list, call graph, leaf candidates
+  crates/               Rust workspace (nastran-core, nastran-cli, fortran-bridge)
+
+Build
+-----
+  docker build -t nastran-rs-build -f docker/Dockerfile .
+  docker run --rm -v "$PWD:/work" nastran-rs-build scripts/build-baseline.sh
+  docker run --rm -v "$PWD:/work" nastran-rs-build python3 parity/run_all.py
+  docker run --rm -v "$PWD:/work" nastran-rs-build python3 parity/qualify.py

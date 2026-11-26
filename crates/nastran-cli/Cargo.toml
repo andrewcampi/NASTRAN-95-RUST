@@ -1,0 +1,9 @@
+[package]
+name = "nastran-cli"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+nastran-core = { path = "../nastran-core" }
+fortran-bridge = { path = "../fortran-bridge" }

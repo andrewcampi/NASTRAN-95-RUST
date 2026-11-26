@@ -1,0 +1,14 @@
+build/
+target/
+*.o
+*.a
+*.mod
+*.log
+.DS_Store
+data/
+uploads/
+none
+*.rej
+*.dic
+*.nptp
+*.opt

@@ -1,0 +1,60 @@
+NASTRAN-95 BASELINE QUALIFICATION
+================================
+
+Date:       2026-11-26
+Source:     nasa/NASTRAN-95 @ 65e29e9db7b21a02bb42e723afa74fa7635ed765
+Toolchain:  Debian bookworm, gfortran 12
+Flags:      -std=legacy -fdec -fallow-invalid-boz -fno-automatic -O0
+            -ffp-contract=off -fno-fast-math
+            (strscn.f at -ffixed-line-length-72; others -none)
+
+Policy
+------
+PASS       Normalized output identical to the 1995 demoout golden.
+KNOWN_DIFF Same structure; numeric values within atol=1e-9 / rtol=1e-3.
+MISSING    Deck needs an RSCARDS/INP1/SOF artifact not in the corpus.
+RESTART    The 1995 output came from a checkpoint not in the corpus.
+FAIL       Structural mismatch or numeric outside tolerance.
+
+Results (132 decks)
+-------------------
+PASS        32
+KNOWN_DIFF  32
+MISSING     11
+RESTART      8
+FAIL        49
+
+Qualified corpus: 64 decks (PASS + KNOWN_DIFF).
+
+Residual categories
+-------------------
+The 49 FAILs are not parser failures. They are:
+  - 10 superelement decks (d0202*) whose goldens include multi-phase/SOF
+    output the single-run corpus does not provide.
+  - ~12 decks where the solver took a different iteration count
+    (USER INFORMATION MESSAGE 3028), shifting the following table.
+  - ~10 genuine numeric differences (aero/eigenvalue decks such as
+    d10021a, d07011a, d14011a, d03031a).
+  - ~19 presentation/label differences, including the Hollerith
+    continuation bug (NUMBEROF STATIONS, vs NUMBER OF STATIONS) and
+    missing OLD FEER / MKAERO2 diagnostic blocks.
+
+Why not byte-exact against 1995
+-------------------------------
+The 1995 outputs were produced by Sun f77 on SPARC. Compiler/FPU
+differences, Hollerith continuation behavior, and missing checkpoint/SOF
+artifacts make byte-exact reproduction impossible for a subset of the
+corpus. The rebuilt baseline is the oracle for Rust parity. The 1995
+goldens remain a partial historical sanity check.
+
+Rust parity gate
+----------------
+A module ticket may merge only when the rebuilt baseline and the Rust
+build produce byte-identical normalized output for every deck that
+exercises the module, and the reviewer approves the diff and report.
+
+Reproduce
+---------
+  docker run --rm -v "$PWD:/work" nastran-rs-build scripts/build-baseline.sh
+  docker run --rm -v "$PWD:/work" nastran-rs-build python3 parity/run_all.py
+  docker run --rm -v "$PWD:/work" nastran-rs-build python3 parity/qualify.py
