@@ -3,6 +3,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
+rm -rf build/qual
 python3 parity/run_all.py > /tmp/gaggle-parity.log 2>&1
 python3 parity/qualify.py > /tmp/gaggle-qualify.log 2>&1
 python3 - "$ROOT" <<'PY'
