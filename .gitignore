@@ -13,3 +13,6 @@ none
 *.nptp
 *.opt
 parity/out/
+__pycache__/
+*.pyc
+Cargo.lock
