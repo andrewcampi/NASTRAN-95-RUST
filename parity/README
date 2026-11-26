@@ -1,0 +1,20 @@
+UNIT-DRIVER PARITY
+==================
+
+Each ported leaf module gets:
+  parity/drivers/<module>.f   fixed-input Fortran driver, stdout only
+  parity/golden/<module>.txt  captured from the pinned rebuilt baseline
+  a #[test] in the Rust module that emits the same text format
+
+The driver is compiled directly with the original Fortran source and the
+pinned flags, for example:
+
+  gfortran -O0 -ffp-contract=off -fno-fast-math -std=legacy -fdec \
+    -o /tmp/dcross_drv parity/drivers/dcross.f vendor/nastran95/mis/dcross.f
+  /tmp/dcross_drv > /tmp/dcross.out
+  diff -u parity/golden/dcross.txt /tmp/dcross.out
+
+No dates, timing, memory addresses, or uninitialized values in driver output.
+The golden is committed. The diff must be empty.
+
+The 64-deck qualified corpus is guarded by tools/qualify.sh.

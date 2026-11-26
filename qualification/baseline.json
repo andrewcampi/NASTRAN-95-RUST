@@ -1,0 +1,10 @@
+{
+  "qualified": 64,
+  "counts": {
+    "PASS": 32,
+    "KNOWN_DIFF": 32,
+    "MISSING": 11,
+    "RESTART": 8,
+    "FAIL": 49
+  }
+}

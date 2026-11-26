@@ -4,6 +4,8 @@
 //! The parity build deliberately uses opt-level 0, no fast-math, and no FMA
 //! contraction so it matches the pinned Fortran baseline's arithmetic.
 
+pub mod mis;
+
 /// Placeholder until the first leaf module ticket lands.
 pub fn abi_version() -> u32 {
     1
