@@ -2,3 +2,4 @@
 pub mod dnorm;
 pub mod dcross;
 pub mod daxb;
+pub mod curvps;
