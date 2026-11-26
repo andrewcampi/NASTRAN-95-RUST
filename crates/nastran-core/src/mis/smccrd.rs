@@ -23,25 +23,18 @@
 ///
 /// Accumulates `DTEMP(I) = DTEMP(I) + ZIL(I) * ZOL` for `I = 1..ilim`.
 ///
-/// `ilim` is the Fortran loop bound: it is clamped to the shorter of the two
-/// slices so the Rust port can never index out of bounds, and a non-positive
-/// `ilim` leaves both arrays untouched, exactly like the Fortran `DO` loop
-/// with an empty trip count.
-///
-/// # Panics
-///
-/// Panics if `ilim` is positive and larger than the length of either slice;
-/// the Fortran caller contract requires `DTEMP` and `ZIL` to be declared with
-/// at least `ILIM` elements.
+/// `ilim` is the Fortran `INTEGER` loop bound, so it is signed: a
+/// non-positive `ilim` gives an empty `DO` trip count and leaves both arrays
+/// untouched. As in Fortran, the caller contract is that `DTEMP` and `ZIL`
+/// are declared with at least `ILIM` elements; there is no additional
+/// validation here.
 #[inline]
-pub fn smccrd(dtemp: &mut [f64], zil: &[f64], ilim: usize, zol: f64) {
-    assert!(
-        ilim <= dtemp.len() && ilim <= zil.len(),
-        "SMCCRD: ILIM={ilim} exceeds array length (DTEMP={}, ZIL={})",
-        dtemp.len(),
-        zil.len()
-    );
-    for i in 0..ilim {
+pub fn smccrd(dtemp: &mut [f64], zil: &[f64], ilim: i32, zol: f64) {
+    // Fortran: DO 10 I = 1, ILIM — a non-positive bound means zero trips.
+    if ilim <= 0 {
+        return;
+    }
+    for i in 0..ilim as usize {
         // Fortran: DTEMP(I) = DTEMP(I) + ZIL(I) * ZOL
         // Multiply first, then add; no FMA, no reassociation.
         dtemp[i] = dtemp[i] + zil[i] * zol;
@@ -146,6 +139,16 @@ mod tests {
         // ILIM = 0 is a no-op.
         let mut dtemp = [1.0, 2.0, 3.0, 4.0];
         smccrd(&mut dtemp, &zil, 0, 2.0);
+        assert_eq!(dtemp, [1.0, 2.0, 3.0, 4.0]);
+    }
+
+    #[test]
+    fn smccrd_negative_ilim_is_noop() {
+        // Fortran INTEGER ILIM may be negative: DO 10 I = 1, ILIM has an
+        // empty trip count, so both arrays are left exactly as they were.
+        let mut dtemp = [1.0, 2.0, 3.0, 4.0];
+        let zil = [10.0, 10.0, 10.0, 10.0];
+        smccrd(&mut dtemp, &zil, -3, 2.0);
         assert_eq!(dtemp, [1.0, 2.0, 3.0, 4.0]);
     }
 }
