@@ -5,3 +5,4 @@ pub mod daxb;
 pub mod curvps;
 pub mod scalex;
 pub mod permut;
+pub mod smccrd;
