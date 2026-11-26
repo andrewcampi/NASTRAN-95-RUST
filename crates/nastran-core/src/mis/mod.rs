@@ -7,3 +7,4 @@ pub mod scalex;
 pub mod permut;
 pub mod smccrd;
 pub mod fornum;
+pub mod makmcb;
