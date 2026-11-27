@@ -63,6 +63,8 @@ def norm(text: str) -> list[str]:
 def run_deck(deck: Path) -> dict:
     name = deck.stem
     d = WORK / name
+    if d.exists():
+        shutil.rmtree(d, ignore_errors=True)
     d.mkdir(parents=True, exist_ok=True)
     # READFILE <name> looks for <name> in the working directory. The demo
     # corpus keeps those DMAP alter packages in alt/.
