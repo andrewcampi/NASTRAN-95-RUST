@@ -9,3 +9,4 @@ pub mod smccrd;
 pub mod fornum;
 pub mod makmcb;
 pub mod decode;
+pub mod bpack;
