@@ -11,3 +11,4 @@ pub mod makmcb;
 pub mod decode;
 pub mod bpack;
 pub mod ssghtp;
+pub mod dipole;
