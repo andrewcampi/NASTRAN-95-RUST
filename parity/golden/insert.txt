@@ -1,0 +1,44 @@
+CASE 1 IPR=1 NDOF=3 NGRID=2 NCOL=2 NROW=3 JCORE=1
+CASE 1 Z  25      1.0
+CASE 1 Z  26      4.0
+CASE 1 Z  27      7.0
+CASE 1 Z  40      1.0
+CASE 1 Z  41      2.0
+CASE 1 Z  42      3.0
+CASE 1 Z  49      2.0
+CASE 1 Z  50      5.0
+CASE 1 Z  51      8.0
+CASE 1 Z  64      4.0
+CASE 1 Z  65      5.0
+CASE 1 Z  66      6.0
+CASE 1 Z  73      3.0
+CASE 1 Z  74      6.0
+CASE 1 Z  75      9.0
+CASE 1 Z  88      7.0
+CASE 1 Z  89      8.0
+CASE 1 Z  90      9.0
+CASE 2 IPR=1 NDOF=1 NGRID=3 NCOL=2 NROW=3 JCORE=2
+CASE 2 Z   7      1.0
+CASE 2 Z   9      1.0
+CASE 3 IPR=2 NDOF=3 NGRID=2 NCOL=3 NROW=2 JCORE=1
+CASE 3 DZ  25       1.25
+CASE 3 DZ  26       2.25
+CASE 3 DZ  27       3.25
+CASE 3 DZ  40       1.25
+CASE 3 DZ  41       4.25
+CASE 3 DZ  42       7.25
+CASE 3 DZ  49       4.25
+CASE 3 DZ  50       5.25
+CASE 3 DZ  51       6.25
+CASE 3 DZ  64       2.25
+CASE 3 DZ  65       5.25
+CASE 3 DZ  66       8.25
+CASE 3 DZ  73       7.25
+CASE 3 DZ  74       8.25
+CASE 3 DZ  75       9.25
+CASE 3 DZ  88       3.25
+CASE 3 DZ  89       6.25
+CASE 3 DZ  90       9.25
+CASE 4 IPR=2 NDOF=1 NGRID=3 NCOL=3 NROW=2 JCORE=2
+CASE 4 DZ   7       1.25
+CASE 4 DZ   9       1.25
