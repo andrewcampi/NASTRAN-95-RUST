@@ -13,3 +13,4 @@ pub mod bpack;
 pub mod ssghtp;
 pub mod dipole;
 pub mod shstts;
+pub mod insert;
