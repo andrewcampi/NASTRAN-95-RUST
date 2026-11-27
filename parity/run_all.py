@@ -21,8 +21,12 @@ BIN = REPO / "build/nastran"
 WORK = REPO / "build/qual"
 WORK.mkdir(parents=True, exist_ok=True)
 
-TIMEOUT = 240
-WORKERS = 6
+# The corpus includes decks that are slow under load. Keep the pool small and
+# retry a timed-out deck once; six workers plus concurrent review/merge jobs
+# made one deck flip between KNOWN_DIFF and FAIL.
+TIMEOUT = 480
+WORKERS = 3
+DECK_TRIES = 2
 
 
 def norm(text: str) -> list[str]:
@@ -94,25 +98,30 @@ def run_deck(deck: Path) -> dict:
         }
     )
     started = time.time()
-    try:
-        with deck.open("rb") as fin, (d / "out.txt").open("wb") as fout, (
-            d / "err.txt"
-        ).open("wb") as ferr:
-            proc = subprocess.run(
-                [str(BIN)],
-                stdin=fin,
-                stdout=fout,
-                stderr=ferr,
-                env=env,
-                cwd=str(d),
-                timeout=TIMEOUT,
-            )
-        exit_code = proc.returncode
-    except subprocess.TimeoutExpired:
-        exit_code = -9
-    except Exception as exc:  # noqa: BLE001
-        exit_code = -1
-        (d / "err.txt").write_text(str(exc))
+    exit_code = -1
+    for attempt in range(DECK_TRIES):
+        try:
+            with deck.open("rb") as fin, (d / "out.txt").open("wb") as fout, (
+                d / "err.txt"
+            ).open("wb") as ferr:
+                proc = subprocess.run(
+                    [str(BIN)],
+                    stdin=fin,
+                    stdout=fout,
+                    stderr=ferr,
+                    env=env,
+                    cwd=str(d),
+                    timeout=TIMEOUT,
+                )
+            exit_code = proc.returncode
+        except subprocess.TimeoutExpired:
+            exit_code = -9
+        except Exception as exc:  # noqa: BLE001
+            exit_code = -1
+            (d / "err.txt").write_text(str(exc))
+        if exit_code != -9 or attempt == DECK_TRIES - 1:
+            break
+        time.sleep(2)
 
     elapsed = round(time.time() - started, 1)
     out_path = d / "out.txt"
