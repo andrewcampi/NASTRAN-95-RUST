@@ -19,3 +19,4 @@ pub mod sub;
 pub mod dbmmov;
 pub mod dbmrlb;
 pub mod dsiodd;
+pub mod geturn;
