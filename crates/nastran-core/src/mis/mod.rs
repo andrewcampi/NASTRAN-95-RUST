@@ -25,3 +25,4 @@ pub mod dssdcb;
 pub mod norm1;
 pub mod delset;
 pub mod dsprcl;
+pub mod sortdg;
