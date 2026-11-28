@@ -18,3 +18,4 @@ pub mod gpwg1c;
 pub mod sub;
 pub mod dbmmov;
 pub mod dbmrlb;
+pub mod dsiodd;
