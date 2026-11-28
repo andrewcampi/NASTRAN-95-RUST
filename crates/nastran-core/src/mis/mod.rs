@@ -17,3 +17,4 @@ pub mod insert;
 pub mod gpwg1c;
 pub mod sub;
 pub mod dbmmov;
+pub mod dbmrlb;
