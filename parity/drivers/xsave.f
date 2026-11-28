@@ -1,0 +1,99 @@
+      PROGRAM XSVDRV
+C
+C     FIXED-INPUT PARITY DRIVER FOR XSAVE (mis/xsave.f)
+C     PRINTS ONLY DETERMINISTIC FIXED-FORMAT TEXT.
+C
+C     XSAVE IMPLEMENTS THE SAVE DMAP INSTRUCTION.  IT READS THE PARAMETER
+C     COUNT FROM IOSCR(7), THEN WALKS IOSCR IN STRIDE-2 PAIRS
+C     (VPS POINTER J, BLANK-COMMON POINTER K) FOR I1 = 8,N,2 WITH
+C     N = IOSCR(7)*2 + 6.  FOR EACH PAIR IT TAKES THE VALUE LENGTH FROM
+C     IVPS(J-1) AND COPIES L WORDS FROM IPAR(K...) INTO IVPS(J...).
+C
+C     THREE CASES:
+C       CASE 1: SINGLE-PARAMETER SAVE (L=3)
+C       CASE 2: MULTI-PARAMETER SAVE (3 PARAMETERS, L=2,3,1)
+C       CASE 3: ZERO-LENGTH VALUE (L=0) FOLLOWED BY A REAL VALUE (L=2)
+C
+C     IVPS IS RESET TO A FIXED SENTINEL PATTERN BEFORE EVERY CASE AND
+C     IVPS(1..24) IS PRINTED AFTERWARDS, SO THE OUTPUT PINS BOTH THE
+C     WORDS XSAVE WRITES AND THE WORDS IT MUST LEAVE ALONE.
+C
+      COMMON/XVPS/ IVPS(64)
+      COMMON/BLANK/ IPAR(64)
+      COMMON /OSCENT/ IOSCR(64)
+      INTEGER I, K
+C
+C     FIXED BLANK-COMMON PAYLOAD.  EVERY VALUE IS DISTINCT SO THE COPY
+C     SOURCE OF EACH SAVED WORD IS IDENTIFIABLE.
+C
+      DO 5 I = 1, 64
+        IPAR(I) = 100 + I
+    5 CONTINUE
+C
+      DO 200 K = 1, 3
+C
+C       RESET THE VPS WINDOW TO THE SENTINEL PATTERN IVPS(I) = -I
+C
+        DO 10 I = 1, 64
+          IVPS(I) = -I
+   10   CONTINUE
+C
+C       CLEAR THE OSCAR SCRATCH AREA
+C
+        DO 20 I = 1, 64
+          IOSCR(I) = 0
+   20   CONTINUE
+C
+        IF (K .EQ. 1) THEN
+C
+C         CASE 1: ONE PARAMETER.  N = 1*2 + 6 = 8, SO THE ONLY PAIR IS
+C         I1 = 8.  J = 2, K = 1, L = IVPS(1) = 3.
+C
+          IVPS(1) = 3
+          IOSCR(7) = 1
+          IOSCR(8) = 2
+          IOSCR(9) = 1
+        ELSE IF (K .EQ. 2) THEN
+C
+C         CASE 2: THREE PARAMETERS.  N = 3*2 + 6 = 12, SO THE PAIRS ARE
+C         I1 = 8, 10, 12.
+C           (J=2, K=1, L=IVPS(1)=2)  -> IVPS(2..3)  = IPAR(1..2)
+C           (J=5, K=3, L=IVPS(4)=3)  -> IVPS(5..7)  = IPAR(3..5)
+C           (J=9, K=6, L=IVPS(8)=1)  -> IVPS(9)     = IPAR(6)
+C
+          IVPS(1) = 2
+          IVPS(4) = 3
+          IVPS(8) = 1
+          IOSCR(7) = 3
+          IOSCR(8) = 2
+          IOSCR(9) = 1
+          IOSCR(10) = 5
+          IOSCR(11) = 3
+          IOSCR(12) = 9
+          IOSCR(13) = 6
+        ELSE
+C
+C         CASE 3: TWO PARAMETERS, THE FIRST WITH A ZERO-LENGTH VALUE.
+C         N = 2*2 + 6 = 10, SO THE PAIRS ARE I1 = 8, 10.
+C           (J=2, K=1, L=IVPS(1)=0)  -> NOTHING IS COPIED
+C           (J=5, K=3, L=IVPS(4)=2)  -> IVPS(5..6)  = IPAR(3..4)
+C
+          IVPS(1) = 0
+          IVPS(4) = 2
+          IOSCR(7) = 2
+          IOSCR(8) = 2
+          IOSCR(9) = 1
+          IOSCR(10) = 5
+          IOSCR(11) = 3
+        END IF
+C
+        CALL XSAVE
+C
+        WRITE(6,900) K, IOSCR(7)
+        WRITE(6,910) (IVPS(I),I=1,24)
+  200 CONTINUE
+      STOP
+C
+  900 FORMAT('CASE ',I1,' NPARAM=',I2)
+  910 FORMAT(12I12)
+      END
